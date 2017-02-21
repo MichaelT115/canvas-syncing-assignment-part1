@@ -1,13 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <!-- Will put the library into a JS global called io-->
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
-    <script type="text/babel" >
+    <script type="application/javascript">
         "use strict";
-    
+        (() => {
+            // The socket connected to the server.
+            let socket;
+
+            const setupSocket = () => {
+                const messageDiv = document.querySelector('#ServerMessageDisplay');
+
+                // Set up send 'update' event.
+                socket.on('update', (data) => {
+                    console.dir(data);
+                    const message = data.message;
+                    messageDiv.innerHTML = message;
+                });
+            }
+
+
+            const init = () => {
+                socket = io.connect();
+
+                setupSocket();
+            }
+
+            window.onload = init;
+        })(window)
     </script>
 </head>
-<body>
 
+<body>
+    <h2>Message from Server</h2>
+    <div id='ServerMessageDisplay'></div>
 </body>
+
 </html>
