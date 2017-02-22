@@ -1,23 +1,16 @@
-const socketio = require('socket.io');
-
 const httpHandler = require('./httpHandler');
+const ioHandler = require('./ioHandler');
 
 const PORT = process.env.PORT || process.env.NODE_PORT || 3000;
 
+// Create HTTP server. Handles HTTP requests.
 const server = httpHandler.CreateServer(PORT);
 
-const io = socketio.listen(server);
-
-io.sockets.on('connection', (socket) => {
-  console.log('IO Socket Started');
-
-  let x = 0;
-
-  const sendMessage = () => {
-    x += 1;
-
-    socket.emit('update', { message: x });
-  };
-
-  setInterval(sendMessage, 100);
+// Set IO Handler to listen to the server.
+const io = ioHandler.CreateIO(server, (socket) => {
+  // Handles when a message is received from a socket.
+  socket.on('message', (data) => {
+    io.emit('message', data); // Sends message to everyone
+    socket.emit('serverMessage', { message: 'Message Sent' });  // Sends confirmation message to server.
+  });
 });

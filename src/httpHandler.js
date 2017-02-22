@@ -14,42 +14,49 @@ const extToType = {
   '.xml': 'text/xml',
 };
 
+// Creates Promise to create a file.
 const GetFile = fileName => new Promise((resolve, reject) => {
   const filePath = path.resolve(`${__dirname}/../client/`, `./${fileName}`);
+
   fs.readFile(filePath, (err, data) => {
-    if (err) {
+    if (err) {  // If the file is not found, call reject function.
       reject(err);
-    } else {
+    } else {    // If the file is found, call resolve function.
       resolve(data);
     }
   });
 });
 
+// Handle requests
 const RequestHandler = (request, response) => {
   console.log(request.url);
   const urlObject = url.parse(request.url, true);
   const pathname = urlObject.pathname === '/' ? '/index.html' : urlObject.pathname;
   const fileExtension = path.extname(pathname);
 
-  GetFile(urlObject.pathname).then(
+  GetFile(pathname).then(
+    // File successfully found.
     (data) => {
       response.writeHead(200, { 'Content-Type': extToType[fileExtension] });
       response.write(data);
       response.end();
-    }).catch(
+    },
+    // Error in finding file.
     (err) => {
       throw err;
     });
 };
 
+// Create a server at port.
 const CreateServer = (PORT) => {
+  // Create server
   const server = http.createServer(RequestHandler);
-
+  // Set server to listen to port.
   server.listen(PORT);
 
   console.log(`listening on port ${PORT}`);
 
-  return server;
+  return server;  // Return the server.
 };
 
 module.exports.CreateServer = CreateServer;

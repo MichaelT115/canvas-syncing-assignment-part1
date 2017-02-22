@@ -5,38 +5,62 @@
     <!-- Will put the library into a JS global called io-->
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
-    <script type="application/javascript">
+    <script type="text/babel">
         "use strict";
         (() => {
             // The socket connected to the server.
             let socket;
 
             const setupSocket = () => {
-                const messageDiv = document.querySelector('#ServerMessageDisplay');
+                // Get div where message is displayed.
+                const messageDiv = document.querySelector('#MessageDisplay');
+                const serverMessageDiv = document.querySelector('#ServerMessageDisplay');
+                const inputField = document.querySelector('#input');
 
-                // Set up send 'update' event.
-                socket.on('update', (data) => {
-                    console.dir(data);
+                document.querySelector('#submit').onclick = () => {
+                    socket.emit('message', { message: inputField.value });
+                };
+
+                // Set up on 'message' event.
+                socket.on('message', (data) => {
                     const message = data.message;
-                    messageDiv.innerHTML = message;
+                    messageDiv.innerHTML += `<p>${message}</p>`;
+                });
+
+                // Set for recieving messages from the server.
+                socket.on('serverMessage', (data) => {
+                    const message = data.message;
+                    serverMessageDiv.innerHTML = message;
+
+                    // Remove message after 3 seconds.
+                    setTimeout(() => {
+                        serverMessageDiv.innerHTML = "";
+                    }, 3000);
                 });
             }
 
-
             const init = () => {
+                // Connect to socket.
                 socket = io.connect();
-
                 setupSocket();
             }
 
             window.onload = init;
-        })(window)
+        })(window);
     </script>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <h2>Type and Submit Messages</h2>
+    <h3>You will recieve a confirmation from the server is it successful</h3>
+    <label for='message'>Message</label>
+    <input id='input' type='text'></input>
+    <button id='submit'>Submit</button>
+    <span id='ServerMessageDisplay'></span>
+
     <h2>Message from Server</h2>
-    <div id='ServerMessageDisplay'></div>
+    <div id='MessageDisplay'></div>
 </body>
 
 </html>
